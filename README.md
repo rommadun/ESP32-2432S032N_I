@@ -3,8 +3,13 @@
 Just a Quick Setup Guide for this Board, because i had a lot of troubles getting it to work.
 
 This is the Board, i boght from Amazon:
-![Board_Top](https://github.com/user-attachments/assets/6bc2be53-5ca5-45af-b3fb-841b3748b4ab)
-![Board_Bootom](https://github.com/user-attachments/assets/808f89d6-4660-4d73-a862-d76bbe8e5439)
+
+![Board_Bootom](https://github.com/user-attachments/assets/e510208e-983f-4e5f-9724-b6234f9f0fae)
+
+![Board_Top](https://github.com/user-attachments/assets/3403663e-bdc7-458a-a5f4-3bb2396d694f)
+
+Its a cheap ESP32 Board with wifi. 
+It has a 3.2 inch screen without touch (240x320px)
 
 ########################################################################################################
 
@@ -16,4 +21,4 @@ Installation:
 5. Go to your Documents > Arduino > libaries > TFT_eSPI > User_Setup.h
 6. Copy it from here
 7. Check for the right Settings
-8. Have Fun!
+8. Upload your Script and have Fun!
