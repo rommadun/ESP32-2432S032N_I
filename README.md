@@ -1,4 +1,5 @@
 # ESP32-2432S032N_I
+#######################################################################################
 
 Just a Quick Setup Guide for this Board, because i had a lot of troubles getting it to work.
 
@@ -11,7 +12,7 @@ This is the Board, i boght from Amazon:
 Its a cheap ESP32 Board with wifi. 
 It has a 3.2 inch screen without touch (240x320px)
 
-########################################################################################################
+#######################################################################################
 
 Installation:
 1. Install Arduino IDE
@@ -22,3 +23,5 @@ Installation:
 6. Copy it from here
 7. Check for the right Settings
 8. Upload your Script and have Fun!
+
+#######################################################################################
