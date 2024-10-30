@@ -1,0 +1,18 @@
+- Select Board: ESP 32 Dev Module
+
+
+Click on Tools >
+
+- CPU Frequency: "240 MHZ"
+- Core Debug Level "None"
+- Erase All Flash Before Scetch Upload: " Disabled"
+- Events run on: "Core 1"
+- Flash Mode: "DIO"
+- Flash Size: "4MB (32Mb)"
+- JTAG Adapter: "Disabled"
+- Arduino Runs on: "Core 1"
+- Partition Scheme: "Default 4MB with spiffs"
+- PSRAM: "Disabled"
+- Upload Speed: "115200"
+- Zigbee Mode: "Disabled"
+- Programmer: "Esptool"
