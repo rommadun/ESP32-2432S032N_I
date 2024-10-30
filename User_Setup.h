@@ -1,6 +1,6 @@
 //#########################################################################################################################
 //Its not from me, its just to help others
-//Thanks to this kpeem <3
+//Thanks to this kpeeem <3
 //https://github.com/kpeeem/3.2inch_ESP32-2432S032/blob/main/1-Demo/Demo_Arduino/Libraries/TFT_eSPI_original/User_Setup.h
 //#########################################################################################################################
 
