@@ -3,7 +3,7 @@
 
 Just a Quick Setup Guide for this Board, because i had a lot of troubles getting it to work.
 
-This is the Board, i boght from Amazon:
+This is the Board, i bought from Amazon:
 ![Board_Back](https://github.com/user-attachments/assets/f2cc25e4-9e82-45ce-9220-a9fcefa4eafb)
 ![Board_Front](https://github.com/user-attachments/assets/e3038e6f-a5e0-421f-94e5-b00e831e35a2)
 
