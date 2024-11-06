@@ -4,10 +4,8 @@
 Just a Quick Setup Guide for this Board, because i had a lot of troubles getting it to work.
 
 This is the Board, i boght from Amazon:
-
-![Board_Bootom](https://github.com/user-attachments/assets/e510208e-983f-4e5f-9724-b6234f9f0fae)
-
-![Board_Top](https://github.com/user-attachments/assets/3403663e-bdc7-458a-a5f4-3bb2396d694f)
+![Board_Back](https://github.com/user-attachments/assets/f2cc25e4-9e82-45ce-9220-a9fcefa4eafb)
+![Board_Front](https://github.com/user-attachments/assets/e3038e6f-a5e0-421f-94e5-b00e831e35a2)
 
 Its a cheap ESP32 Board with wifi. 
 It has a 3.2 inch screen without touch (240x320px)
