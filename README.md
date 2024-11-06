@@ -19,7 +19,7 @@ Installation:
 4. Install "esp32 by Espressif Systems" Boards inside Arduino IDE
 5. Go to your Documents > Arduino > libaries > TFT_eSPI > User_Setup.h
 6. Copy it from here
-7. Check for the right Settings
+7. Check for the right Settings (also linked here)
 8. Upload your Script and have Fun!
 
 #######################################################################################
