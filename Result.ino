@@ -136,11 +136,13 @@ void displayTime() {
 void displayWeather() {
   static float lastTemp = -100.0; // Unrealistische Startwerte zum Erzwingen der ersten Anzeige
   static float lastHumidity = -1.0;
+  static float tTemp = -12.3;
+  static float thumidity = 100.0;
 
   // Prüfen, ob die Temperatur oder Luftfeuchtigkeit sich geändert hat
   if (currentTemp != lastTemp || humidity != lastHumidity) {
     // Bereich für Wetteranzeige löschen
-    tft.fillRect(0, 180, 240, 50, TFT_BLACK); // Löscht den gesamten Bereich
+    tft.fillRect(0, 180, 320, 50, TFT_BLACK); // Löscht den gesamten Bereich
 
     // Textfarbe und Ausrichtung setzen
     tft.setTextColor(textColor, TFT_BLACK);
@@ -149,12 +151,12 @@ void displayWeather() {
     // Thermometersymbol zeichnen
     drawThermometer(20, 200);
     // Temperatur mit Gradzeichen und "C" anzeigen
-    tft.drawString(String(currentTemp, 1) + "", 60, 210, 6);
+    tft.drawString(String(currentTemp, 1) + "", 50, 210, 6);
 
     // Regentropfensymbol zeichnen
     drawRaindrop(210, 200);
     // Luftfeuchtigkeit mit Prozentzeichen anzeigen
-    tft.drawString(String(humidity, 0) + " ", 250, 210, 6);
+    tft.drawString(String(humidity, 0) + " ", 240, 210, 6);
 
     // Aktuelle Werte speichern, um sie später mit den neuen Werten zu vergleichen
     lastTemp = currentTemp;
