@@ -9,107 +9,114 @@
 
 // TFT Display
 TFT_eSPI tft = TFT_eSPI();
-uint16_t textColor = tft.color565(129, 139, 69); // Variable für Schriftfarbe Sake:     119, 129, 92
+uint16_t textColor = tft.color565(129, 139, 69); // Schriftfarbe
 
 // NTP Zeit-Client
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600, 60000);
 
-// Zeit und Wetter aktualisieren
-unsigned long previousMillis = 0;
-const long interval = 900000; //900000// Aktualisierung alle 15 Minuten (15*60*1000) Debug: 30000
-
 // Deutsche Wochentage
-String GlobalDay;
 const char* wochenTage[] = {"So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"};
-
-bool syncedToday = false; // Variable für tägliche Synchronisierung
 
 void setup() {
   Serial.begin(115200);
   tft.init();
-  tft.setRotation(1); // Rotation für 240x320 Display     1 = Rechts Anschluss
+  tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
 
-  // WLAN verbinden
-  //WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("Verbunden!");
-
-  // NTP Zeit-Client starten
-  timeClient.begin();
-  timeClient.setTimeOffset(3600); // Start mit CET (UTC + 1 Stunde)
-}
-
-
-void loop() {
-  checkDST(); // Überprüfen und Anpassen der Sommer- und Winterzeit
-  checkTimeSync();  // Synchronisiere die Uhrzeit um 4 Uhr
-
-  // Uhrzeit und Datum anzeigen
+  // Initialanzeige
   displayTime();
 }
 
+void loop() {
+  static unsigned long lastSyncMillis = 0;
+  unsigned long currentMillis = millis();
 
-void checkDST() {
-  // Hole die aktuelle Zeit und extrahiere den Monat und den Tag
+  // Überprüfen, ob Synchronisierung notwendig ist
+  if (currentMillis - lastSyncMillis >= 3600000 || lastSyncMillis == 0) { // Jede Stunde
+    connectWiFi();       // WLAN verbinden
+    syncTime();          // Zeit synchronisieren
+    disconnectWiFi();    // WLAN trennen
+    lastSyncMillis = currentMillis;
+  }
+
+  // Uhrzeit und Datum anzeigen
+  displayTime();
+  delay(1000); // Anzeigen aktualisieren
+}
+
+void connectWiFi() {
+  Serial.println("Verbinde mit WLAN...");
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  unsigned long startAttemptTime = millis();
+
+  // Verbinden, mit Timeout von 10 Sekunden
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("Verbunden!");
+  } else {
+    Serial.println("Verbindung fehlgeschlagen!");
+  }
+}
+
+void disconnectWiFi() {
+  WiFi.disconnect(true); // WLAN trennen
+  WiFi.mode(WIFI_OFF);   // WLAN-Modul deaktivieren
+  Serial.println("WLAN getrennt.");
+}
+
+void syncTime() {
+  timeClient.begin();
+  timeClient.forceUpdate(); // Zeit synchronisieren
+  adjustDST();              // Sommer-/Winterzeit anpassen
+  timeClient.end();
+  Serial.println("Zeit synchronisiert: " + timeClient.getFormattedTime());
+}
+
+void adjustDST() {
   time_t now = timeClient.getEpochTime();
   struct tm *ti = localtime(&now);
-  int month = ti->tm_mon + 1; // tm_mon ist 0-basiert, daher +1
+  int month = ti->tm_mon + 1;
   int day = ti->tm_mday;
-  int weekday = ti->tm_wday;  // 0 = Sonntag, 1 = Montag, ..., 6 = Samstag
+  int weekday = ti->tm_wday;
 
-  // Sommerzeitregelung für EU: Letzter Sonntag im März bis letzter Sonntag im Oktober
-  if ((month > 3 && month < 10) ||             // Monate April bis September
-      (month == 3 && (day - weekday >= 25)) || // Letzter Sonntag im März
-      (month == 10 && (day - weekday < 25))) { // Letzter Sonntag im Oktober
-    timeClient.setTimeOffset(7200);  // CEST (UTC + 2 Stunden)
+  // Sommerzeitregelung für EU
+  if ((month > 3 && month < 10) || (month == 3 && (day - weekday >= 25)) || (month == 10 && (day - weekday < 25))) {
+    timeClient.setTimeOffset(7200); // CEST
   } else {
-    timeClient.setTimeOffset(3600);  // CET (UTC + 1 Stunde)
+    timeClient.setTimeOffset(3600); // CET
   }
 }
 
+void displayTime() {
+  time_t rawtime = timeClient.getEpochTime();
+  struct tm *ti = localtime(&rawtime);
 
-int lastSyncHour = -1;
-void checkTimeSync() {
-  int currentHour = timeClient.getHours();
-  int currentMinute = timeClient.getMinutes();
-
-  // Synchronisiere nur zu jeder vollen Stunde und einmal pro Stunde
-  if (currentMinute == 0 && currentHour != lastSyncHour) {
-    timeClient.forceUpdate();  // Zwinge eine Synchronisierung
-    lastSyncHour = currentHour; // Aktualisiere letzte Synchronisierungsstunde
-    Serial.println("Uhrzeit synchronisiert zur vollen Stunde.");
-  }
-}
-
-
-void displayTime() { 
-  //tft.loadFont("FreeMono");
   String formattedTime = timeClient.getFormattedTime().substring(0, 5); // Stunden:Minuten
-  String dateStr = getFormattedDate();
-  //String dateStr = "-- " + getFormattedDate() + " --";
+  char buffer[20];
+  strftime(buffer, sizeof(buffer), "%d.%m.%Y", ti);
+  String dateStr = String(wochenTage[ti->tm_wday]) + ", " + String(buffer);
 
-  // Bereich für Datum und Uhrzeit leeren und neu zeichnen
+  // Nur aktualisieren, wenn sich die Anzeige ändert
   static String lastTime = "";
   static String lastDate = "";
 
   if (formattedTime != lastTime || dateStr != lastDate) {
-    tft.fillRect(0, 0, 320, 160, TFT_BLACK); // Bereich leeren
-
-    // Datum anzeigen
+    tft.fillScreen(TFT_BLACK);
     tft.setTextColor(textColor, TFT_BLACK);
     tft.setTextDatum(MC_DATUM);
-    tft.fillRect(40, 32, 20, 4, textColor); // Strich zeichnen    Start, Positon, Länge, Dicke , Farbe
-    tft.drawString(dateStr, 160, 40, 4);
-    tft.fillRect(260, 32, 20, 4, textColor); // Strich zeichnen    Start, Positon, Länge, Dicke , Farbe
-    //tft.drawString(GlobalDay, 160, 60, 6);
+    drawBackground(); // Hintergrund zeichnen
 
-    // Uhrzeit anzeigen
+    // Datum und Uhrzeit anzeigen
+    tft.fillRect(40, 42, 20, 4, textColor); // Strich zeichnen    Start, Positon, Länge, Dicke , Farbe
+    tft.drawString(dateStr, 160, 50, 4);
+    tft.fillRect(260, 42, 20, 4, textColor); // Strich zeichnen    Start, Positon, Länge, Dicke , Farbe
+
     tft.fillRect(25, 80, 270, 4, textColor); // Strich zeichnen    Start, Positon, Länge, Dicke , Farbe
     tft.drawString(formattedTime, 160, 140, 8);
     tft.fillRect(25, 200, 270, 4, textColor); // Strich zeichnen    Start, Positon, Länge, Dicke , Farbe
@@ -120,16 +127,28 @@ void displayTime() {
 }
 
 
-String getFormattedDate() {
-  time_t rawtime = timeClient.getEpochTime();
-  struct tm * ti;
-  ti = localtime(&rawtime);
-  char buffer[20];
-  strftime(buffer, sizeof(buffer), "%d.%m.%Y", ti); // Datum formatieren
 
-  // Wochentag hinzufügen
-  String dayOfWeek = String(wochenTage[ti->tm_wday]);
-  return dayOfWeek + ", " + String(buffer);
-  //GlobalDay = String(wochenTage[ti->tm_wday]);
-  //return String(buffer);
+void drawBackground() {
+  int centerX = 160;  // X-Koordinate der Mitte
+  int centerY = 440;  // Y-Koordinate der Mitte (unten)
+  int maxRadius = 340; // Maximale Radiusgröße
+  int steps = 20;      // Anzahl der Farbverläufe
+
+  // Startfarbe (0, 0, 0) und Endfarbe (129, 139, 69)
+  uint16_t startColor = tft.color565(0, 0, 0);
+  uint16_t endColor = tft.color565(40, 40, 20);
+
+  // Berechne den Farbverlauf
+  for (int i = 0; i < steps; i++) {
+    // Berechne den aktuellen Radius und die aktuelle Farbe
+    int radius = maxRadius - i * (maxRadius / steps);
+    uint16_t color = tft.color565(
+      (i * (40 / steps)), 
+      (i * (40 / steps)), 
+      (i * (20 / steps))
+    );
+    
+    // Zeichne den Kreis mit dem berechneten Radius und der Farbe
+    tft.fillCircle(centerX, centerY, radius, color);
+  }
 }
